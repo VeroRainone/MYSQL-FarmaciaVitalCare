@@ -1,0 +1,66 @@
+VISTAS
+
+
+1- Vista: V_Estado_Pedidos
+Esta vista muestra los pedidos agrupados según el estado, se puede ver cuántos pedidos están pendientes, en proceso o completados. Cuenta cuántos pedidos hay en cada estado y muestra el total en una columna llamada Cantidad_Pedidos.
+Es útil para monitorear el progreso de los pedidos y priorizar acciones.
+
+CREATE VIEW V_Estado_Pedidos 
+AS
+SELECT Estado_pedido, COUNT(Id_pedido) AS Cantidad_Pedidos
+FROM Pedidos
+GROUP BY Estado_pedido;
+
+SELECT * FROM V_Estado_Pedidos;
+
+2- Vista:  V_Medicamentos_Laboratorios 
+Esta vista tiene como objetivo relacionar los nombres de los medicamentos con los nombres de los laboratorios, partiendo de una tabla intermedia que gestiona esta relación, uniendo mediante Joins el nombre de los respectivos.
+Es más útil que trabajar directamente con la tabla intermedia ya que de esta forma permite entender qué medicamento está asociado a qué laboratorio de forma más descriptiva sin tener que hacer Join cada vez, además puede ser útil para generar reportes, inventarios, negociaciones entre otras.
+
+CREATE VIEW V_Medicamentos_Laboratorios
+AS
+SELECT m.Nombre AS Nombre_Medicamento, l.Nombre AS Nombre_Laboratorio
+FROM Medicamentos_Laboratorios ml
+JOIN Medicamentos M ON ml.Id_medicamento = m.Id_medicamento
+JOIN Laboratorios l ON ml.Id_laboratorio = l.Id_laboratorio;
+
+SELECT * FROM V_Medicamentos_Laboratorios;
+
+3- Vista: V_Medicamentos_Ventas
+Esta vista muestra el nombre de cada medicamento junto con la cantidad total vendida. Utiliza la tabla intermedia Medicamentos_Ventas para sumar las cantidades de medicamentos vendidos, agrupándolos por su nombre. Utiliza el Join con la tabla Medicamentos para traer los nombres.
+Muy útil para inventarios y reportes o análisis de ventas.
+
+CREATE VIEW V_Medicamentos_Ventas
+AS
+SELECT m.Nombre AS Nombre_Medicamento, SUM(mv.Cantidad) AS Cantidad_vendida
+FROM Medicamentos_Ventas mv
+JOIN Medicamentos m ON m.Id_Medicamento = mv.Id_Medicamento
+GROUP BY m.Nombre; 
+
+
+SELECT * FROM V_Medicamentos_Ventas; 
+
+
+4- Vista:V_Medicamentos_Stock_Categorias
+Esta vista selecciona las columnas nombre y stock de la tabla medicamentos y la columna nombre de la tabla categorías, mediante un Left Join. Asegura que todos los registros de Medicamentos se incluirán en la vista, incluso si no tienen una categoría asociada en la tabla Categorias. En estos casos, la columna Categoria tendrá un valor NULL. Permite identificar medicamentos sin categoría.
+
+CREATE VIEW V_Medicamentos_Stock_Categorias
+AS
+SELECT m.Nombre AS Nombre_Medicamento, m.Stock, c.Nombre AS Categoria
+FROM Medicamentos m
+LEFT JOIN Categorias c ON m.Id_categoria = c.Id_categoria;
+
+SELECT * FROM V_Medicamentos_Stock_Categorias;
+
+5- Vista: V_Laboratorios_Pedidos
+Esta vista se utiliza para obtener un resumen de los laboratorios y el número de pedidos asociados a cada uno.
+Selecciona la columna Nombre y de id_pedido hace un count, cuenta el número de pedidos relacionados con ese laboratorio, y se muestra como Cantidad_Pedidos esto lo toma de la tabla Laboratorios.Se realiza un Left Join para unir la tabla Laboratorios con la tabla Pedidos.Esto asegura que todos los laboratorios se incluirán en la vista, incluso si no tienen pedidos asociados. En esos casos, Cantidad_Pedidos será 0. Con el group by agrupa los datos por el nombre del laboratorio (esto es necesario ya que se utiliza el count).
+
+CREATE VIEW V_Laboratorios_Pedidos 
+AS
+SELECT l.Nombre AS Nombre_Laboratorio, COUNT(p.Id_pedido) AS Cantidad_Pedidos
+FROM Laboratorios l
+LEFT JOIN Pedidos p ON l.Id_laboratorio = p.Id_laboratorio
+GROUP BY l.Nombre;
+
+SELECT * FROM V_Laboratorios_Pedidos;

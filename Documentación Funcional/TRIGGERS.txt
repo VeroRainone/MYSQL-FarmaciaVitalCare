@@ -1,0 +1,62 @@
+TRIGGERS
+
+1- Trigger: Tr_Validar_Stock_Negativo 
+Este Trigger verifica en la tabla Medicamentos, antes de actualizar el stock, que no sea negativo. Si el stock no cumple con esta condición detiene la operación y muestra un error.
+
+DELIMITER //
+
+CREATE TRIGGER Tr_Validar_Stock_Negativo 
+BEFORE UPDATE ON Medicamentos
+FOR EACH ROW
+BEGIN
+    IF NEW.Stock < 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'El stock no puede ser negativo.';
+    END IF;
+END//
+
+DELIMITER ;
+
+Ejemplo de ejecución:
+
+UPDATE Medicamentos
+SET Stock = 15 
+WHERE Id_medicamento = 1;
+
+Acá se ejecuta sin problema porque el stock es mayor a 0. Si en lugar de 15 es un -15 el trigger se activa antes de realizar la operación, la detiene y lanza el Error Code: 1644. El stock no puede ser negativo.
+
+2- Trigger: tr_Actualizar_Precio
+Este Trigger registrar cambios en el precio de los medicamentos y los inserta en la tabla de auditoría. Para ello es necesario tener la tabla "Auditoria_Precios". De esta forma se mantiene un historial de los cambios de precios sin modificar la estructura original. Este Trigger pertenece a la tabla Medicamentos ya que reacciona a eventos en esa tabla.
+
+
+DELIMITER //
+CREATE TRIGGER tr_Actualizar_Precio
+BEFORE UPDATE ON Medicamentos
+FOR EACH ROW
+BEGIN
+    IF OLD.Precio != NEW.Precio THEN
+        INSERT INTO Auditoria_Precios (Id_medicamento, Nombre, Precio_Anterior, Precio_Nuevo, Fecha_Cambio)
+        VALUES (OLD.Id_medicamento, OLD.Nombre, OLD.Precio, NEW.Precio, NOW());
+    END IF;
+END;
+//
+
+Esta es la tabla de auditoria donde registra los cambios:
+CREATE TABLE Auditoria_Precios (
+    Id_auditoria INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    Id_medicamento INT NOT NULL,
+    Nombre VARCHAR(100),
+    Precio_Anterior DECIMAL(10,2) NOT NULL,
+    Precio_Nuevo DECIMAL(10,2) NOT NULL,
+    Fecha_Cambio DATETIME NOT NULL,
+    FOREIGN KEY (Id_medicamento) REFERENCES Medicamentos(Id_medicamento)
+);
+
+
+Ejemplo de activación del Trigger:
+
+UPDATE Medicamentos
+SET Precio = 35.0
+WHERE Id_medicamento = 1;
+
+Esto lo inserta en la tabla Auditoria_Precios.

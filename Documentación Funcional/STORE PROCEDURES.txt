@@ -1,0 +1,45 @@
+STORE PROCEDURES
+
+
+1- Procedimiento Almacenado: sp_Consultar_Medicamentos_Vencidos
+Este procedimiento está diseñado para poder ver con facilidad y rapidez los medicamentos que estén vencidos.
+Correspondiendo a los que su fecha de vencimiento sea menor a la fecha actual, del día de la consulta, trayendo otros datos como el nombre, id, stock como información adicional.
+
+
+DELIMITER //
+
+CREATE PROCEDURE sp_Consultar_Medicamentos_Vencidos()
+BEGIN
+    SELECT Id_medicamento, Nombre, Fecha_Vencimiento, Stock
+    FROM Medicamentos
+    WHERE Fecha_Vencimiento < CURDATE();
+END //
+
+DELIMITER ;
+
+CALL sp_Consultar_Medicamentos_Vencidos();
+
+
+2- Procedimiento Almacenado: sp_Descontar_Stock
+Este procedimiento verifica primero si hay stock suficiente en base a la cantidad que se ingresa en el parámetro de entrada y luego descuenta de la tabla Medicamentos dicha cantidad (si es que es menor al stock existente), en caso de que sea mayor la cantidad ingresada el Error Code va a indicar " Stock insuficiente", aclarando así el motivo del error.
+
+DELIMITER //
+CREATE PROCEDURE sp_Descontar_Stock(
+    IN MedicamentoId INT,
+    IN Cantidad INT
+)
+BEGIN
+    IF (SELECT Stock FROM Medicamentos WHERE Id_medicamento = MedicamentoId) >= Cantidad 
+    THEN
+        UPDATE Medicamentos
+        SET Stock = Stock - Cantidad
+        WHERE Id_medicamento = MedicamentoId;
+    ELSE
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Stock insuficiente';
+    END IF;
+END//
+DELIMITER ;
+
+CALL sp_Descontar_Stock( );
+

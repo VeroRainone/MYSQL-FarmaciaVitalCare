@@ -1,0 +1,9 @@
+Informes Power BI
+
+Se realizaron dos informes.
+1-
+El primer caso analizado, mediante un gráfico de barras, se puede observar a simple vista el nombre del medicamento y la cantidad que hay en stock.
+
+2-
+El segundo mediante un gráfico de torta se utilizó para visualizar cómo se distribuyen las ventas entre los clientes.
+Analizando el cliente y el importe total. Esto te da una visión clara de qué cliente genera más ingresos.

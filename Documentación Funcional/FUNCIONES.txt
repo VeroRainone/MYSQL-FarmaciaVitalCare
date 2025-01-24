@@ -1,0 +1,50 @@
+FUNCIONES
+
+
+1- función: fn_calcular_precio_conIVA
+Esta función tiene dos parámetros de entrada, el precio y el porcentaje de IVA que se desea aplicar a dicho precio. 
+La función devuelve el valor del IVA calculado sobre el precio, y lo que hace en la consulta es sumar este valor al precio original para mostrar el precio con IVA incluido.
+En la consulta, se llama a esta función para cada medicamento de la tabla Medicamentos, generando un nuevo campo en la consulta llamado PrecioConIVA, que representa el precio original más el IVA calculado.
+
+DELIMITER //
+
+CREATE FUNCTION fn_calcular_precio_conIVA(
+	precio DOUBLE, 
+	porcentajeIVA DECIMAL(5, 2)
+)
+RETURNS DOUBLE
+DETERMINISTIC
+BEGIN
+    RETURN ROUND(precio * porcentajeIVA / 100, 2); 
+END;
+//
+
+DELIMITER ;
+
+-- ACA LA LLAMA A LA FUNCION CON IVA 21% A MODO DE EJEMPLO
+
+SELECT Id_medicamento, Nombre, Precio, 
+       fn_calcular_precio_conIVA(Precio, 21) AS PrecioConIVA
+FROM Medicamentos;
+
+
+2-  función:fn_Aplicar_Descuento
+La función tiene dos parámetros de entrada, uno corresponde al precio del producto y el otro al descuento que se quiere aplicar, devolviendo el cálculo de descuento realizado sobre dicho precio.
+Esta función es muy útil ya que permiten trabajar con cálculos dinámicos sin alterar los valores originales en las tablas.
+
+
+DELIMITER //
+CREATE FUNCTION fn_Aplicar_Descuento(
+	PrecioBase DECIMAL(10,2),
+	Descuento DECIMAL(10,2)
+)
+RETURNS DECIMAL(10,2)
+DETERMINISTIC
+BEGIN
+    RETURN PrecioBase - (PrecioBase * Descuento / 100);
+END//
+DELIMITER ;
+
+-- ---- ACA LA LLAMA A LA FUNCION A MODO DE EJEMPLO
+SELECT fn_Aplicar_Descuento(100, 10) AS PrecioConDescuento; -- Resultado: 90.00
+
